@@ -1,0 +1,59 @@
+---
+title: "new.data.2024"
+author: "ray"
+date: "2024-01-28"
+output: html_document
+---
+# Load necessary packages
+library(tidyverse)
+
+# 1) Load data (otu.table.g.csv), compute row means, sort by descending mean, take top 58
+otu.table <- read_delim('otu.table.g.csv', delim = ',', col_names = TRUE) %>%
+  mutate(mean = rowMeans(across(where(is.numeric)))) %>%
+  arrange(desc(mean)) %>%
+  select(-mean) %>%
+  head(58)
+
+# Save to CSV
+write.csv(otu.table, '16s.genus.0.1up.csv', row.names = FALSE)
+
+
+# 2) Read '16s.genus.0.01up.csv', calculate how many samples are non-zero for each genus,
+#    sort in descending order, then filter to keep genera present in >= 92 samples
+up.otu.table <- read_delim('16s.genus.0.01up.csv', delim = ',', col_names = TRUE) %>%
+  mutate(genus_num = rowSums(. > 0)) %>%
+  arrange(desc(genus_num)) %>%
+  filter(genus_num >= 92)
+
+# Save filtered data
+write.csv(up.otu.table, '16s.genus.0.01up.numbers.csv', row.names = FALSE)
+
+
+# 3) Read '16s.genus..control.0.01up.csv', count non-zero occurrences, sort in descending order
+#    (Optionally filter by genus_num >= 26, if 26 is ~90% of your control sample size)
+control.otu.table <- read_delim('16s.genus..control.0.01up.csv', delim = ',', col_names = TRUE) %>%
+  mutate(genus_num = rowSums(. > 0)) %>%
+  arrange(desc(genus_num))
+# filter(genus_num >= 26)  # optionally filter at ~90% threshold
+
+# Save to CSV
+write.csv(control.otu.table, '16s.genus.0.01up.control.all.csv', row.names = FALSE)
+
+
+# 4) Similar process for '16s.genus.case.0.01up.csv'
+case.otu.table <- read_delim('16s.genus.case.0.01up.csv', delim = ',', col_names = TRUE) %>%
+  mutate(genus_num = rowSums(. > 0)) %>%
+  arrange(desc(genus_num))
+# filter(genus_num >= 26)  # optionally filter at ~90% threshold
+
+# Save to CSV
+write.csv(case.otu.table, '16s.genus.0.01up.case.all.csv', row.names = FALSE)
+
+
+# 5) Read 'old.data.1.csv', count non-zero occurrences, sort, (optionally filter), then save
+old.otu.table <- read_delim('old.data.1.csv', delim = ',', col_names = TRUE) %>%
+  mutate(genus_num = rowSums(. > 0)) %>%
+  arrange(desc(genus_num))
+# filter(genus_num >= 26)  # optionally filter at ~90% threshold
+
+write.csv(old.otu.table, '16s.genus.old.otu.table.all.csv', row.names = FALSE)
